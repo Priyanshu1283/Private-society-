@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
-// You can replace this with a real Admin ObjectId later
-const defaultAdminId = '660000000000000000000000'; // Example ObjectId
+const defaultAdminId = '660000000000000000000000';
 
 const eventSchema = new mongoose.Schema({
   title: {
@@ -29,5 +28,4 @@ const eventSchema = new mongoose.Schema({
 });
 
 const eventModel = mongoose.model('event', eventSchema);
-
 module.exports = eventModel;

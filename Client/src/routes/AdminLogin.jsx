@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const AdminLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [user, setUser] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     setErrorMessage(null);
     try {
-      const res = await axios.post('https://societysync-production.up.railway.app/api/auth/login/admin', form, {
+      const res = await axios.post('http://localhost:3000/api/auth/login/admin', form, {
         withCredentials: true,
       });
       localStorage.setItem('token', res.data.token);
@@ -38,7 +38,7 @@ const Login = () => {
       }
 
       try {
-        const res = await axios.get('https://societysync-production.up.railway.app/api/auth/me', {
+        const res = await axios.get('http://localhost:3000/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
@@ -133,4 +133,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;

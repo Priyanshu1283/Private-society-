@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
-// Create a Theft Report schema
 const theftSchema = new mongoose.Schema({
   residentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user', // Reference to the User model
+    ref: 'user',
     required: true,
   },
   description: {
@@ -13,7 +12,7 @@ const theftSchema = new mongoose.Schema({
     trim: true,
   },
   media: {
-    type: String, // URL or base64 string (optional)
+    type: String,
     default: '',
   },
   detail: {
@@ -28,5 +27,4 @@ const theftSchema = new mongoose.Schema({
 });
 
 const theft = mongoose.model('theft', theftSchema);
-
 module.exports = theft;

@@ -2,99 +2,88 @@ const express = require("express");
 const authMiddleware = require("../middlewares/auth");
 const eventModel = require("../models/eventModel");
 const userModel = require("../models/userModel");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+
 const router = express.Router();
 
 router.post("/create", authMiddleware, async (req, res) => {
-    const { title, description, venue, date} = req.body;
-
-    if (!title || !date) return res.status(400).json({ message: 'Invalid request' });
+    const { title, description, venue, date } = req.body;
+    if (!title || !date) return res.status(400).json({ message: "Invalid request" });
 
     try {
-        const admin = await userModel.findById(req.user._id );
-        if (admin.role !== "admin") return res.json({ message: "You are not an admin"});
+        const admin = await userModel.findById(req.user._id);
+        if (admin.role !== "admin") return res.json({ message: "You are not an admin" });
+
         const existing = await eventModel.findOne({ title });
-        if (existing) return res.json({ message: "Event already exists"});
+        if (existing) return res.json({ message: "Event already exists" });
 
         const event = new eventModel({
             title,
             description,
             venue,
             date,
-            createdBy: req.user._id,
+            createdBy: req.user._id
         });
+
         await event.save();
-    
         res.json(event);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({message: "Oops! Something broke. We're working on it."});
+    } catch (err) {
+        res.status(500).json({ message: "Failed to create event" });
     }
 });
 
 router.get("/", authMiddleware, async (req, res) => {
     try {
-        // Get page and limit from query parameters, default to page 1 and limit 10
         const { page = 1, limit = 10 } = req.query;
-        const pageNumber = parseInt(page, 10);
-        const limitNumber = parseInt(limit, 10);
 
         const events = await eventModel.find()
-            .sort({ date: 1 })  // Optional: Sort events by date (ascending)
-            .skip((pageNumber - 1) * limitNumber)  // Skip events based on current page
-            .limit(limitNumber);  // Limit the number of events returned
+            .sort({ date: 1 })
+            .skip((page - 1) * limit)
+            .limit(Number(limit));
 
         res.json(events);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to fetch events" });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch events" });
     }
 });
 
 router.put("/:id", authMiddleware, async (req, res) => {
-    const { id } = req.params;
-    const { title, description, venue, date } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid user ID' });
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID" });
+    }
 
     try {
-        const admin = await userModel.findById(req.user._id );
-        if (admin.role !== "admin") return res.json({ message: "You are not an admin"});
+        const admin = await userModel.findById(req.user._id);
+        if (admin.role !== "admin") return res.json({ message: "You are not an admin" });
+
         const updatedEvent = await eventModel.findByIdAndUpdate(
-            id,
-            { title, description, venue, date },
-            { new: true, runValidators: true }  // `new: true` ensures the returned event is the updated one
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
         );
 
-        if (!updatedEvent) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-
-        res.json(updatedEvent);  
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to update event" });
+        if (!updatedEvent) return res.status(404).json({ message: "Event not found" });
+        res.json(updatedEvent);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to update event" });
     }
 });
 
 router.delete("/:id", authMiddleware, async (req, res) => {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid user ID' });
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID" });
+    }
 
     try {
-        const admin = await userModel.findById(req.user._id );
-        if (admin.role !== "admin") return res.json({ message: "You are not an admin"});
-        const eventId = req.params.id;
-        
-        const event = await eventModel.findByIdAndDelete(eventId);
-        if (!event) {
-            return res.status(404).json({ message: "Event not found" });
-        }
+        const admin = await userModel.findById(req.user._id);
+        if (admin.role !== "admin") return res.json({ message: "You are not an admin" });
+
+        const deleted = await eventModel.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ message: "Event not found" });
 
         res.json({ message: "Event deleted successfully" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: "Failed to delete event" });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to delete event" });
     }
 });
 

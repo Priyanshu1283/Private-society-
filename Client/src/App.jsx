@@ -1,38 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import Login from './routes/Login_New';
-import Events from './routes/Events';
-import Complaints from './routes/Complaints';
-import Ordering from './routes/Ordering';
-import Emergency from './routes/Emergency';
-import Services from './routes/Services';
-import RentMaintenance from './routes/RentMaintenance';
-import DashboardContent from './components/DashboardContent';
-import Me from './routes/Me';
-import AdminLogin from './routes/AdminLogin';
-import WorkerLogin from './routes/WorkerLogin';
-import WorkerDashBoard from './components/WorkerDashBoard';
-import Discover from './routes/discover';
-import SecurityCams from './routes/Security-cams';
-import VisitorAndDelivery from './routes/VisitorAndDelivery';
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+
+// layout
+import Layout from "./components/Layout";
+
+// dashboards
+import DashboardContent from "./components/DashboardContent";
+import WorkerDashBoard from "./components/WorkerDashBoard";
+
+// auth routes
+import UserLogin from "./routes/Login_New";
+import AdminLogin from "./routes/AdminLogin";
+import WorkerLogin from "./routes/WorkerLogin";
+
+// app routes
+import Events from "./routes/Events";
+import Complaints from "./routes/Complaints";
+import Ordering from "./routes/Ordering";
+import Emergency from "./routes/Emergency";
+import Services from "./routes/Services";
+import RentMaintenance from "./routes/RentMaintenance";
+import Me from "./routes/Me";
+import Discover from "./routes/discover";
+import SecurityCams from "./routes/Security-cams";
+import VisitorAndDelivery from "./routes/VisitorAndDelivery";
+
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    const storedAdmin = localStorage.getItem('admin');
-    const storedWorker = localStorage.getItem('worker');
+    const token = localStorage.getItem("token");
+
+    const storedUser =
+      localStorage.getItem("user") ||
+      localStorage.getItem("admin") ||
+      localStorage.getItem("worker");
+
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else if (token && storedAdmin) {
-      setUser(JSON.parse(storedAdmin));
-    } else if (token && storedWorker) {
-      setUser(JSON.parse(storedWorker));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        setUser(null);
+      }
     }
+
     setLoading(false);
   }, []);
 
@@ -40,33 +53,35 @@ const App = () => {
 
   return (
     <Routes>
-      {/* Login Route */}
-      <Route path="/login" element={<Login setUser={setUser} />} />
+      {/* ================= AUTH ROUTES ================= */}
+      <Route path="/login" element={<UserLogin />} />
+      <Route path="/login/admin" element={<AdminLogin />} />
+      <Route path="/login/worker" element={<WorkerLogin />} />
+      <Route path="/discover" element={<Discover />} />
 
-      {/* Layout Route with user authentication check */}
+      {/* ================= PROTECTED ROUTES ================= */}
       <Route element={<Layout user={user} />}>
-        <Route path="/dashboard/worker" element={<WorkerDashBoard />} />
+        {/* dashboards */}
         <Route path="/dashboard" element={<DashboardContent />} />
+        <Route path="/dashboard/worker" element={<WorkerDashBoard />} />
+
+        {/* features */}
         <Route path="/events" element={<Events />} />
         <Route path="/complaints" element={<Complaints />} />
         <Route path="/ordering" element={<Ordering />} />
         <Route path="/emergency" element={<Emergency />} />
         <Route path="/services" element={<Services />} />
         <Route path="/rent-maintenance" element={<RentMaintenance />} />
-        <Route path="/me" element={<Me />} />
         <Route path="/security-cams" element={<SecurityCams />} />
         <Route path="/visitor-delivery" element={<VisitorAndDelivery />} />
+        <Route path="/me" element={<Me />} />
       </Route>
 
-      {/*Discover page Route */}
-      <Route path="/discover" element={<Discover />} />
-
-      {/* Admin Login Route */}
-      <Route path="/login/admin" element={<AdminLogin />} />
-      <Route path="/login/worker" element={<WorkerLogin />} />
-
-      {/* Catch-all Route */}
-      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+      {/* ================= FALLBACK ================= */}
+      <Route
+        path="*"
+        element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
+      />
     </Routes>
   );
 };

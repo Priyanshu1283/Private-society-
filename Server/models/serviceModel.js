@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
-// Create a Service Request schema
 const serviceSchema = new mongoose.Schema({
   residentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user', // Reference to the User model
+    ref: 'user',
     required: true,
   },
   houseNo: {
@@ -32,11 +31,10 @@ const serviceSchema = new mongoose.Schema({
   },
   workerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'worker', // Assuming worker is also a user
+    ref: 'worker',
     default: null,
   },
 });
 
 const serviceModel = mongoose.model('service', serviceSchema);
-
 module.exports = serviceModel;

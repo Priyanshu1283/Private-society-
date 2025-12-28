@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Create a Security Camera schema
 const securityCamSchema = new mongoose.Schema({
   cameraName: {
     type: String,
@@ -20,5 +19,4 @@ const securityCamSchema = new mongoose.Schema({
 });
 
 const securityCam = mongoose.model('securityCam', securityCamSchema);
-
 module.exports = securityCam;

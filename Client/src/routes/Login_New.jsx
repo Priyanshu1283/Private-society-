@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const UserLogin = () => {
   const [form, setForm] = useState({ name: '', houseNo: '', email: '', password: '' });
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const Login = () => {
     const endpoint = isLogin ? '/login' : '/register';
 
     try {
-      const res = await axios.post(`https://societysync-production.up.railway.app/api/auth${endpoint}`, form, {
+      const res = await axios.post(`http://localhost:3000/api/auth${endpoint}`, form, {
         withCredentials: true,
       });
 
@@ -132,4 +132,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default UserLogin;

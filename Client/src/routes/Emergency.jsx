@@ -6,7 +6,7 @@ const EmergencyPage = () => {
   const handleEmergencyClick = () => {
     try {
       // Directly open the phone dialer for a normal call
-      window.location.href = 'tel:+99981603789'; // Replace with the desired phone number
+      window.location.href = 'tel:+98102346798'; // Replace with the desired phone number
     } catch (error) {
       console.error('Error triggering the emergency call:', error);
     }

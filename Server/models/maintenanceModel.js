@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
-// Maintenance Schema
 const maintenanceSchema = new mongoose.Schema({
   residentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user', // Reference to the User model
+    ref: 'user',
     required: true,
   },
   amount: {
@@ -19,7 +18,6 @@ const maintenanceSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['paid', 'unpaid', 'pending'],
-    required: true,
     default: 'unpaid',
   },
   paymentMethod: {
@@ -30,5 +28,4 @@ const maintenanceSchema = new mongoose.Schema({
 });
 
 const maintenance = mongoose.model('maintenance', maintenanceSchema);
-
 module.exports = maintenance;

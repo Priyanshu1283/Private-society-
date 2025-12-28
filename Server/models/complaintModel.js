@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const complaintSchema = new mongoose.Schema({
   residentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user', // Reference to the User model
+    ref: 'user',
     required: true,
   },
   houseNo: {
@@ -13,7 +13,7 @@ const complaintSchema = new mongoose.Schema({
   category: {
     type: String,
     enum: ["Maintainance", "Billing", "Noise", "Security", "Water", "Garbage"],
-    required: true
+    required: true,
   },
   detail: {
     type: String,
@@ -27,5 +27,4 @@ const complaintSchema = new mongoose.Schema({
 });
 
 const complaintModel = mongoose.model('complaint', complaintSchema);
-
 module.exports = complaintModel;
