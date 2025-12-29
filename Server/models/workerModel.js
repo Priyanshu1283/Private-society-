@@ -1,28 +1,20 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const workerSchema = new mongoose.Schema({
-  name: {
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+
+  role: {
     type: String,
-    required: true,
+    default: "worker"
   },
-  email: {
+
+  status: {
     type: String,
-    required: true,
-    unique: true,
-  },
-  profilePicture: {
-    data: Buffer,
-    contentType: String,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  joinedAt: {
-    type: Date,
-    default: Date.now,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
   }
 });
 
-const workerModel = mongoose.model('worker', workerSchema);
-module.exports = workerModel;
+module.exports = mongoose.model("worker", workerSchema);
