@@ -16,7 +16,7 @@ const WorkerLogin  = () => {
     e.preventDefault();
     setErrorMessage(null);
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/login/worker', form, {
+      const res = await axios.post('https://societysync-890y.onrender.com/api/auth/login/worker', form, {
         withCredentials: true,
       });
       localStorage.setItem('token', res.data.token);
@@ -38,7 +38,7 @@ const WorkerLogin  = () => {
         return;
       }
       try {
-        const res = await axios.get('http://localhost:3000/api/auth/me', {
+        const res = await axios.get('https://societysync-890y.onrender.com/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
