@@ -40,7 +40,7 @@ export default function Me() {
       
         const token = localStorage.getItem("token");
       
-        const response = await fetch("https://societysync-890y.onrender.com/api/me/profile-picture", {
+        const response = await fetch("http://localhost:3000/api/me/profile-picture", {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -115,7 +115,7 @@ export default function Me() {
       }
 
       const token = localStorage.getItem("token");
-      const res = await fetch("https://societysync-890y.onrender.com/api/me", {
+      const res = await fetch("http://localhost:3000/api/me", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +188,7 @@ export default function Me() {
         try {
           const token = localStorage.getItem("token");
           const response = await fetch(
-            `https://societysync-890y.onrender.com/api/me/profile-picture/${userId}`,
+            `http://localhost:3000/api/me/profile-picture/${userId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

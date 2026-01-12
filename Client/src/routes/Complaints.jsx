@@ -16,7 +16,7 @@ const Complaints = () => {
     const fetchComplaints = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`https://societysync-890y.onrender.com/api/complaints`, {
+        const response = await axios.get(`http://localhost:3000/api/complaints`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { page: 1, limit: 10 },
         });
@@ -61,12 +61,12 @@ const Complaints = () => {
 
     try {
       if (modalMode === 'create') {
-        await axios.post(`https://societysync-890y.onrender.com/api/complaints/create`, formData, {
+        await axios.post(`http://localhost:3000/api/complaints/create`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (modalMode === 'edit') {
         await axios.put(
-          `https://societysync-890y.onrender.com/api/complaints/${selectedComplaintId}`,
+          `http://localhost:3000/api/complaints/${selectedComplaintId}`,
           formData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +83,7 @@ const Complaints = () => {
   const handleDelete = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`https://societysync-890y.onrender.com/api/complaints/${selectedComplaintId}`, {
+      await axios.delete(`http://localhost:3000/api/complaints/${selectedComplaintId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       closeModal();

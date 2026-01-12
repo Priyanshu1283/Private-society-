@@ -24,19 +24,20 @@ router.post("/register", async (req, res) => {
             email,
             houseNo,
             password: hashedPassword,
+            status: 'pending', // Set initial status to pending
         });
 
         await newUser.save();
 
-        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-        res.json({
-            token,
+        // Do not issue token until admin approves the account
+        res.status(201).json({
+            message: 'Registration submitted. Awaiting admin approval',
             user: {
                 id: newUser._id,
                 name: newUser.name,
                 houseNo: newUser.houseNo,
-                email: newUser.email
+                email: newUser.email,
+                status: newUser.status
             }
         });
     } catch (error) {
@@ -54,6 +55,10 @@ router.post("/login", async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+        if (user.status !== 'approved') {
+            return res.status(403).json({ message: `Account status: ${user.status}. Awaiting admin approval.` });
+        }
 
         const token = jwt.sign(
             { id: user._id, role: user.role },
@@ -167,14 +172,14 @@ router.post("/register/worker", async (req, res) => {
 
         await newWorker.save();
 
-        const token = jwt.sign({ id: newWorker._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-        res.json({
-            token,
+        // Do not issue token until admin approves the worker account
+        res.status(201).json({
+            message: 'Worker registration submitted. Awaiting admin approval',
             user: {
                 id: newWorker._id,
                 name: newWorker.name,
-                email: newWorker.email
+                email: newWorker.email,
+                status: newWorker.status
             }
         });
     } catch (error) {

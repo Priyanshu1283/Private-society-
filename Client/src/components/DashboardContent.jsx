@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Siren } from 'lucide-react';
+import axios from 'axios';
 
 const DashboardContent = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -24,7 +25,55 @@ const DashboardContent = () => {
       }
     }
     if (adminData) setRole("admin");
+    // If admin, fetch pending registrations
+    if (adminData) {
+      const token = localStorage.getItem('token');
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      axios.get(`${API_BASE}/api/admin/pending`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => {
+        setPending(res.data || { users: [], workers: [], securities: [] });
+      }).catch(err => console.error('Failed to load pending:', err));
+    }
   }, []);
+
+  const [pending, setPending] = useState({ users: [], workers: [], securities: [] });
+
+  const handleApprove = async (role, id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const res = await axios.patch(`${API_BASE}/api/admin/approve/${role}/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPending(prev => ({ 
+        users: prev.users.filter(u => !(role === 'user' && u._id === id)),
+        workers: prev.workers.filter(w => !(role === 'worker' && w._id === id)),
+        securities: prev.securities.filter(s => !(role === 'security' && s._id === id))
+      }));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Approve failed');
+    }
+  };
+
+  const handleReject = async (role, id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      await axios.patch(`${API_BASE}/api/admin/reject/${role}/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPending(prev => ({
+        users: prev.users.filter(u => !(role === 'user' && u._id === id)),
+        workers: prev.workers.filter(w => !(role === 'worker' && w._id === id)),
+        securities: prev.securities.filter(s => !(role === 'security' && s._id === id))
+      }));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Reject failed');
+    }
+  };
   
 
   const today = new Date();
@@ -186,6 +235,80 @@ const DashboardContent = () => {
       </div>
       
     </div>
+
+    {role === 'admin' && (
+      <div className="mb-8 p-4 bg-white/5 rounded-lg">
+        <h3 className="text-xl font-semibold mb-4">Pending Registrations</h3>
+        <div className="flex items-center justify-between mb-3">
+          <div />
+          <div className="flex gap-2">
+            <button onClick={async () => {
+              const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+              const token = localStorage.getItem('token');
+              try {
+                const res = await axios.get(`${API_BASE}/api/admin/pending`, { headers: { Authorization: `Bearer ${token}` } });
+                setPending(res.data || { users: [], workers: [], securities: [] });
+              } catch (err) {
+                console.error('Refresh failed', err);
+                alert('Failed to refresh');
+              }
+            }} className="bg-blue-600 px-3 py-1 rounded">Refresh</button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <h4 className="font-bold">Users</h4>
+            {pending.users.length === 0 ? <p className="text-sm text-gray-400">No pending users</p> : null}
+            {pending.users.map(u => (
+              <div key={u._id} className="flex items-center justify-between p-2 bg-neutral-800/50 rounded mt-2">
+                <div>
+                  <div className="font-medium">{u.name} ({u.houseNo})</div>
+                  <div className="text-sm text-gray-400">{u.email}</div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleApprove('user', u._id)} className="bg-green-600 px-3 py-1 rounded">Approve</button>
+                  <button onClick={() => handleReject('user', u._id)} className="bg-red-600 px-3 py-1 rounded">Reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <h4 className="font-bold">Workers</h4>
+            {pending.workers.length === 0 ? <p className="text-sm text-gray-400">No pending workers</p> : null}
+            {pending.workers.map(w => (
+              <div key={w._id} className="flex items-center justify-between p-2 bg-neutral-800/50 rounded mt-2">
+                <div>
+                  <div className="font-medium">{w.name}</div>
+                  <div className="text-sm text-gray-400">{w.email}</div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleApprove('worker', w._id)} className="bg-green-600 px-3 py-1 rounded">Approve</button>
+                  <button onClick={() => handleReject('worker', w._id)} className="bg-red-600 px-3 py-1 rounded">Reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <h4 className="font-bold">Security</h4>
+            {pending.securities.length === 0 ? <p className="text-sm text-gray-400">No pending security</p> : null}
+            {pending.securities.map(s => (
+              <div key={s._id} className="flex items-center justify-between p-2 bg-neutral-800/50 rounded mt-2">
+                <div>
+                  <div className="font-medium">{s.name}</div>
+                  <div className="text-sm text-gray-400">{s.email}</div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleApprove('security', s._id)} className="bg-green-600 px-3 py-1 rounded">Approve</button>
+                  <button onClick={() => handleReject('security', s._id)} className="bg-red-600 px-3 py-1 rounded">Reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {cards.map((card, index) => (
         <Link

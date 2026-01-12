@@ -30,7 +30,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["user", "admin"],
     default: "user",
-  }
+  },
+  status: { type: String, default: 'pending' } // Add status field
 });
 
 // Create a model from the schema

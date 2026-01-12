@@ -13,23 +13,27 @@ const UserLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const endpoint = isLogin ? '/login' : '/register';
+    if (!isLogin) {
+      // Registration flow: submit and show pending notice
+      try {
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+        const res = await axios.post(`${API_BASE}/api/auth/register`, form, { withCredentials: true });
+        alert(res.data?.message || 'Registered — awaiting admin approval');
+        setIsLogin(true);
+      } catch (err) {
+        alert(err.response?.data?.message || 'Something went wrong');
+      }
+      return;
+    }
 
+    // Login flow
     try {
-      const res = await axios.post(`https://societysync-890y.onrender.com/api/auth${endpoint}`, form, {
-        withCredentials: true,
-      });
-
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const res = await axios.post(`${API_BASE}/api/auth/login`, form, { withCredentials: true });
       const user = res.data.user;
       const token = res.data.token;
-
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-
-      // Delay navigation slightly to ensure storage is complete
-      // setTimeout(() => {
-      //   navigate("/dashboard");
-      // }, 3000);
       window.location.href = "/dashboard";
     } catch (err) {
       alert(err.response?.data?.message || 'Something went wrong');

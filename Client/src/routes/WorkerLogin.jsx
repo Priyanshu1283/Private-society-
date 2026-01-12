@@ -16,7 +16,8 @@ const WorkerLogin  = () => {
     e.preventDefault();
     setErrorMessage(null);
     try {
-      const res = await axios.post('https://societysync-890y.onrender.com/api/auth/login/worker', form, {
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const res = await axios.post(`${API_BASE}/api/auth/login/worker`, form, {
         withCredentials: true,
       });
       localStorage.setItem('token', res.data.token);
@@ -38,7 +39,7 @@ const WorkerLogin  = () => {
         return;
       }
       try {
-        const res = await axios.get('https://societysync-890y.onrender.com/api/auth/me', {
+        const res = await axios.get(`${API_BASE}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });

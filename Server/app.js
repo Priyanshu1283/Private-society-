@@ -9,6 +9,7 @@ const eventRoutes = require("./routes/event-routes");
 const complaintRoutes = require("./routes/complaint-routes");
 const serviceRoutes = require("./routes/service-routes");
 const meRoutes = require("./routes/me-routes");
+const adminRoutes = require("./routes/admin-routes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,6 +38,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/me", meRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
