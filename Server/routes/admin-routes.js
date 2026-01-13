@@ -11,10 +11,20 @@ const router = express.Router();
 // Get all pending registrations (grouped)
 router.get("/pending", auth, adminOnly, async (req, res) => {
   try {
-    const users = await userModel.find({ status: "pending" });
-    const workers = await workerModel.find({ status: "pending" });
-    const securities = await securityModel.find({ status: "pending" });
-    res.json({ users, workers, securities });
+    // Collect pending entries from userModel (could contain user/worker/security)
+    const pendingUsers = await userModel.find({ status: "pending", role: "user" });
+    const pendingWorkersFromUsers = await userModel.find({ status: "pending", role: "worker" });
+    const pendingSecuritiesFromUsers = await userModel.find({ status: "pending", role: "security" });
+
+    // Also include any legacy/other collections (workerModel/securityModel)
+    const pendingWorkers = await workerModel.find({ status: "pending" });
+    const pendingSecurities = await securityModel.find({ status: "pending" });
+
+    // Merge sources (user collection may already contain worker/security requests)
+    const workers = [...pendingWorkersFromUsers, ...pendingWorkers];
+    const securities = [...pendingSecuritiesFromUsers, ...pendingSecurities];
+
+    res.json({ users: pendingUsers, workers, securities });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -25,12 +35,22 @@ router.get("/pending", auth, adminOnly, async (req, res) => {
 router.patch("/approve/:role/:id", auth, adminOnly, async (req, res) => {
   try {
     const { role, id } = req.params;
-    const Model = role === "user" ? userModel : role === "worker" ? workerModel : role === "security" ? securityModel : null;
-    if (!Model) return res.status(400).json({ message: "Invalid role" });
+    // Try to update in the user collection first (handles worker/security stored as users)
+    let updated = null;
+    if (role === 'user') {
+      updated = await userModel.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
+    } else if (role === 'worker' || role === 'security') {
+      updated = await userModel.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
+      if (!updated) {
+        const Model = role === 'worker' ? workerModel : securityModel;
+        updated = await Model.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid role' });
+    }
 
-    const updated = await Model.findByIdAndUpdate(id, { status: "approved" }, { new: true });
-    if (!updated) return res.status(404).json({ message: "Not found" });
-    res.json({ message: "Approved", item: updated });
+    if (!updated) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Approved', item: updated });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -41,12 +61,22 @@ router.patch("/approve/:role/:id", auth, adminOnly, async (req, res) => {
 router.patch("/reject/:role/:id", auth, adminOnly, async (req, res) => {
   try {
     const { role, id } = req.params;
-    const Model = role === "user" ? userModel : role === "worker" ? workerModel : role === "security" ? securityModel : null;
-    if (!Model) return res.status(400).json({ message: "Invalid role" });
+    // Similar logic as approve: prefer userModel, fallback to specific collection
+    let updated = null;
+    if (role === 'user') {
+      updated = await userModel.findByIdAndUpdate(id, { status: 'rejected' }, { new: true });
+    } else if (role === 'worker' || role === 'security') {
+      updated = await userModel.findByIdAndUpdate(id, { status: 'rejected' }, { new: true });
+      if (!updated) {
+        const Model = role === 'worker' ? workerModel : securityModel;
+        updated = await Model.findByIdAndUpdate(id, { status: 'rejected' }, { new: true });
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid role' });
+    }
 
-    const updated = await Model.findByIdAndUpdate(id, { status: "rejected" }, { new: true });
-    if (!updated) return res.status(404).json({ message: "Not found" });
-    res.json({ message: "Rejected", item: updated });
+    if (!updated) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Rejected', item: updated });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

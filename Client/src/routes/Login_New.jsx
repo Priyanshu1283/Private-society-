@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const UserLogin = () => {
-  const [form, setForm] = useState({ name: '', houseNo: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', houseNo: '', email: '', password: '', role: 'user' });
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
@@ -76,6 +76,22 @@ const UserLogin = () => {
                       className="mt-1 block w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200"
                       placeholder="e.g., A-101"
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                      Register As
+                    </label>
+                    <select
+                      id="role"
+                      name="role"
+                      value={form.role}
+                      onChange={handleChange}
+                      className="mt-1 block w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200"
+                    >
+                      <option value="user">User</option>
+                      <option value="worker">Worker</option>
+                      <option value="security">Guard / Security</option>
+                    </select>
                   </div>
                 </>
               )}

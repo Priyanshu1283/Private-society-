@@ -46,6 +46,7 @@ const DashboardContent = () => {
       const res = await axios.patch(`${API_BASE}/api/admin/approve/${role}/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log(res.data);
       setPending(prev => ({ 
         users: prev.users.filter(u => !(role === 'user' && u._id === id)),
         workers: prev.workers.filter(w => !(role === 'worker' && w._id === id)),

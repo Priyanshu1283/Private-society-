@@ -1,8 +1,8 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
 
-const connectDB = require('./configs/mongodb-connection');
+const connectDB = require("./configs/mongodb-connection");
 
 const authRoutes = require("./routes/auth-routes");
 const eventRoutes = require("./routes/event-routes");
@@ -14,23 +14,47 @@ const adminRoutes = require("./routes/admin-routes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 🔗 Database Connection
+  //  DATABASE CONNECTION
 connectDB();
 
-// 🔹 Middlewares
+  //  BODY PARSERS
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+  //CORS CONFIG (FIXED)
 
-app.use(express.static('public'));
+const allowedOrigins = [
+  "http://localhost:5173",
+  // "https://society-sync-neon.vercel.app",
+  // "https://societysync-production.up.railway.app"
+];
 
-// 🔹 Routes
-app.get('/api', (req, res) => {
-  res.send("SocietySync API is running 🚀");
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow Postman, mobile apps, server-to-server
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, origin); 
+      }
+
+      return callback(new Error("CORS not allowed"), false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+/* =========================
+   STATIC FILES (IMAGES)
+========================= */
+app.use(express.static("public"));
+
+  //  ROUTES
+app.get("/api", (req, res) => {
+  res.send("SocietySync API is running ");
 });
 
 app.use("/api/auth", authRoutes);
@@ -40,16 +64,17 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/me", meRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Global Error Handler
+  //  GLOBAL ERROR HANDLER
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("ERROR:", err.message);
   res.status(500).json({
     success: false,
-    message: "Internal Server Error"
+    message: err.message || "Internal Server Error",
   });
 });
 
-// 🚀 Start Server
+  //  START SERVER
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`☝️ Server running on port ${PORT}`);
 });
+module.exports = app;

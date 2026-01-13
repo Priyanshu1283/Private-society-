@@ -8,7 +8,7 @@ const Complaints = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // 'create', 'edit', 'delete'
   const [formData, setFormData] = useState({
-    detail: '',
+    detail: '', 
     category: '',
   });
 

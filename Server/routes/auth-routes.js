@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-    const { name, email, password, houseNo } = req.body;
+    const { name, email, password, houseNo, role } = req.body;
     if (!name || !email || !password || !houseNo) {
         return res.status(400).json({ message: 'Please fill all the credentials' });
     }
@@ -19,24 +19,34 @@ router.post("/register", async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Determine initial status: all registrations require admin approval
+        const desiredRole = role && typeof role === 'string' ? role : 'user';
+        const initialStatus = 'pending';
+
         const newUser = new userModel({
             name,
             email,
             houseNo,
             password: hashedPassword,
-            status: 'pending', // Set initial status to pending
+            role: desiredRole,
+            status: initialStatus,
         });
 
         await newUser.save();
 
-        // Do not issue token until admin approves the account
+        // Respond with appropriate message based on initial status
+        const message = initialStatus === 'approved'
+            ? 'Registration successful. You can now log in.'
+            : 'Registration submitted. Awaiting admin approval.';
+
         res.status(201).json({
-            message: 'Registration submitted. Awaiting admin approval',
+            message,
             user: {
                 id: newUser._id,
                 name: newUser.name,
                 houseNo: newUser.houseNo,
                 email: newUser.email,
+                role: newUser.role,
                 status: newUser.status
             }
         });
@@ -125,7 +135,7 @@ router.post("/login/worker", async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const worker = await workerModel.findOne({ email });
+        const worker = await userModel.findOne({ email });
         if (!worker) return res.status(400).json({ message: 'Worker not found' });
 
         const isMatch = await bcrypt.compare(password, worker.password);
