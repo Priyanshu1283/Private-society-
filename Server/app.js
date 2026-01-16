@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
   "http://localhost:5173",
-  // "https://society-sync-neon.vercel.app",
+  "https://private-society.vercel.app/login",
   // "https://societysync-production.up.railway.app"
 ];
 
