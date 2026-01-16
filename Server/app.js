@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
   //CORS CONFIG (FIXED)
 
 const allowedOrigins = [
-  "http://localhost:5173",
+  // "http://localhost:5173",
   "https://private-society.vercel.app/login",
   // "https://societysync-production.up.railway.app"
 ];
