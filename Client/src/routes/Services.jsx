@@ -16,7 +16,7 @@
       const fetchServices = async () => {
         const token = localStorage.getItem('token');
         try {
-          const response = await axios.get(`http://localhost:3000/api/services`, {
+          const response = await axios.get(`https://societysync-890y.onrender.com/api/services`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page: 1, limit: 10 },
           });
@@ -61,12 +61,12 @@
 
       try {
         if (modalMode === 'create') {
-          await axios.post(`http://localhost:3000/api/services/create`, formData, {
+          await axios.post(`https://societysync-890y.onrender.com/api/services/create`, formData, {
             headers: { Authorization: `Bearer ${token}` },
           });
         } else if (modalMode === 'edit') {
           await axios.put(
-            `http://localhost:3000/api/services/${selectedServiceId}`,
+            `https://societysync-890y.onrender.com/api/services/${selectedServiceId}`,
             formData,
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +83,7 @@
     const handleDelete = async () => {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`http://localhost:3000/api/services/${selectedServiceId}`, {
+        await axios.delete(`https://societysync-890y.onrender.com/api/services/${selectedServiceId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         closeModal();

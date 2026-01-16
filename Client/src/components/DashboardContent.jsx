@@ -28,7 +28,7 @@ const DashboardContent = () => {
     // If admin, fetch pending registrations
     if (adminData) {
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       axios.get(`${API_BASE}/api/admin/pending`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
@@ -42,7 +42,7 @@ const DashboardContent = () => {
   const handleApprove = async (role, id) => {
     try {
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       const res = await axios.patch(`${API_BASE}/api/admin/approve/${role}/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -61,7 +61,7 @@ const DashboardContent = () => {
   const handleReject = async (role, id) => {
     try {
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       await axios.patch(`${API_BASE}/api/admin/reject/${role}/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -244,7 +244,7 @@ const DashboardContent = () => {
           <div />
           <div className="flex gap-2">
             <button onClick={async () => {
-              const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+              const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com/';
               const token = localStorage.getItem('token');
               try {
                 const res = await axios.get(`${API_BASE}/api/admin/pending`, { headers: { Authorization: `Bearer ${token}` } });

@@ -16,7 +16,7 @@ const UserLogin = () => {
     if (!isLogin) {
       // Registration flow: submit and show pending notice
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+        const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
         const res = await axios.post(`${API_BASE}/api/auth/register`, form, { withCredentials: true });
         alert(res.data?.message || 'Registered — awaiting admin approval');
         setIsLogin(true);
@@ -28,7 +28,7 @@ const UserLogin = () => {
 
     // Login flow
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       const res = await axios.post(`${API_BASE}/api/auth/login`, form, { withCredentials: true });
       const user = res.data.user;
       const token = res.data.token;

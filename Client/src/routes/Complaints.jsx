@@ -16,7 +16,7 @@ const Complaints = () => {
     const fetchComplaints = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`http://localhost:3000/api/complaints`, {
+        const response = await axios.get(`https://societysync-890y.onrender.com/api/complaints`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { page: 1, limit: 10 },
         });
@@ -61,12 +61,12 @@ const Complaints = () => {
 
     try {
       if (modalMode === 'create') {
-        await axios.post(`http://localhost:3000/api/complaints/create`, formData, {
+        await axios.post(`https://societysync-890y.onrender.com/api/complaints/create`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (modalMode === 'edit') {
         await axios.put(
-          `http://localhost:3000/api/complaints/${selectedComplaintId}`,
+          `https://societysync-890y.onrender.com/api/complaints/${selectedComplaintId}`,
           formData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +83,7 @@ const Complaints = () => {
   const handleDelete = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:3000/api/complaints/${selectedComplaintId}`, {
+      await axios.delete(`https://societysync-890y.onrender.com/api/complaints/${selectedComplaintId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       closeModal();
@@ -119,7 +119,8 @@ const Complaints = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {complaints.map((complaint, index) => (
+        {complaints.map((complaint, index ) => (
+          
           <div
             key={complaint.id}
             className="bg-gradient-to-r from-red-400 to-pink-500 text-white p-6 rounded-xl transition-colors duration-300 relative"

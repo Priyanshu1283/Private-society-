@@ -16,7 +16,7 @@ const WorkerLogin  = () => {
     e.preventDefault();
     setErrorMessage(null);
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com/';
       const res = await axios.post(`${API_BASE}/api/auth/login/worker`, form, {
         withCredentials: true,
       });

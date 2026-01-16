@@ -20,7 +20,7 @@ const WorkerDashBoard = () => {
           const parsedUser = JSON.parse(userData);
           setWorkerData(parsedUser);
 
-          const response = await axios.get('http://localhost:3000/api/services', {
+          const response = await axios.get('https://societysync-890y.onrender.com//api/services', {
             headers: { Authorization: `Bearer ${token}` },
             params: { page: 1, limit: 10 },
           });
@@ -50,7 +50,7 @@ const WorkerDashBoard = () => {
   const handleCompletion = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.patch(`http://localhost:3000/${id}`,
+      const response = await axios.patch(`https://societysync-890y.onrender.com//${id}`,
         console.log(response),
         {}, {
         headers: { 

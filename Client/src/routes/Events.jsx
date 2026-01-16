@@ -18,7 +18,7 @@ const Events = () => {
     const fetchEvents = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`http://localhost:3000/api/events`, {
+        const response = await axios.get(`https://societysync-890y.onrender.com/api/events`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { page: 1, limit: 10 },
         });
@@ -62,11 +62,11 @@ const Events = () => {
     const token = localStorage.getItem('token');
     try {
       if (modalMode === 'create') {
-        await axios.post(`http://localhost:3000/api/events/create`, formData, {
+        await axios.post(`https://societysync-890y.onrender.com/api/events/create`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (modalMode === 'edit') {
-        await axios.put(`http://localhost:3000/api/events/${selectedEvent._id}`, formData, {
+        await axios.put(`https://societysync-890y.onrender.com/api/events/${selectedEvent._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -80,7 +80,7 @@ const Events = () => {
   const handleDelete = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:3000/api/events/${selectedEvent._id}`, {
+      await axios.delete(`https://societysync-890y.onrender.com/api/events/${selectedEvent._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       closeModal();

@@ -30,7 +30,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           const userObj = storedUser ? JSON.parse(storedUser) : adminData ? JSON.parse(adminData): JSON.parse(workerData);
           setUser(userObj);
           if (userObj.id) {
-            const response = await fetch(`http://localhost:3000/api/me/profile-picture/${userObj.id}`, {
+            const response = await fetch(`https://societysync-890y.onrender.com/api/me/profile-picture/${userObj.id}`, {
               method: 'GET',
               headers: {
                 Authorization: `Bearer ${token}`,
