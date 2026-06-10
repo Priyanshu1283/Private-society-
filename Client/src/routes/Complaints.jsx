@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 const Complaints = () => {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
   const isAdmin = localStorage.getItem('admin') && localStorage.getItem('token');
   const [complaints, setComplaints] = useState([]);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
@@ -16,7 +17,7 @@ const Complaints = () => {
     const fetchComplaints = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`https://societysync-890y.onrender.com/api/complaints`, {
+        const response = await axios.get(`${API_BASE}/api/complaints`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { page: 1, limit: 10 },
         });
@@ -61,12 +62,12 @@ const Complaints = () => {
 
     try {
       if (modalMode === 'create') {
-        await axios.post(`https://societysync-890y.onrender.com/api/complaints/create`, formData, {
+        await axios.post(`${API_BASE}/api/complaints/create`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (modalMode === 'edit') {
         await axios.put(
-          `https://societysync-890y.onrender.com/api/complaints/${selectedComplaintId}`,
+          `${API_BASE}/api/complaints/${selectedComplaintId}`,
           formData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +84,7 @@ const Complaints = () => {
   const handleDelete = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`https://societysync-890y.onrender.com/api/complaints/${selectedComplaintId}`, {
+      await axios.delete(`${API_BASE}/api/complaints/${selectedComplaintId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       closeModal();

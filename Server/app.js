@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const connectDB = require("./configs/mongodb-connection");
@@ -24,9 +25,10 @@ app.use(express.urlencoded({ extended: true }));
   //CORS CONFIG (FIXED)
 
 const allowedOrigins = [
-  // "http://localhost:5173",
-  "https://private-society.vercel.app/login",
-  // "https://societysync-production.up.railway.app"
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://private-society.vercel.app",
+  "https://societysync-890y.onrender.com",
 ];
 
 app.use(
@@ -36,7 +38,7 @@ app.use(
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
-        return callback(null, origin); 
+        return callback(null, true);
       }
 
       return callback(new Error("CORS not allowed"), false);
@@ -50,7 +52,8 @@ app.use(
 /* =========================
    STATIC FILES (IMAGES)
 ========================= */
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "dist")));
 
   //  ROUTES
 app.get("/api", (req, res) => {
@@ -64,6 +67,11 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/me", meRoutes);
 app.use("/api/admin", adminRoutes);
 
+// Wildcard route to serve React Router frontend from dist folder
+app.get("*all", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
+
   //  GLOBAL ERROR HANDLER
 app.use((err, req, res, next) => {
   console.error("ERROR:", err.message);
@@ -75,6 +83,6 @@ app.use((err, req, res, next) => {
 
   //  START SERVER
 app.listen(PORT, () => {
-  console.log(`☝️ Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 module.exports = app;

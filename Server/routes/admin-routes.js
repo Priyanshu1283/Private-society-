@@ -11,7 +11,6 @@ const router = express.Router();
 // Get all pending registrations (grouped)
 router.get("/pending", auth, adminOnly, async (req, res) => {
   try {
-    // Collect pending entries from userModel (could contain user/worker/security)
     const pendingUsers = await userModel.find({ status: "pending", role: "user" });
     const pendingWorkersFromUsers = await userModel.find({ status: "pending", role: "worker" });
     const pendingSecuritiesFromUsers = await userModel.find({ status: "pending", role: "security" });
@@ -20,9 +19,18 @@ router.get("/pending", auth, adminOnly, async (req, res) => {
     const pendingWorkers = await workerModel.find({ status: "pending" });
     const pendingSecurities = await securityModel.find({ status: "pending" });
 
-    // Merge sources (user collection may already contain worker/security requests)
-    const workers = [...pendingWorkersFromUsers, ...pendingWorkers];
-    const securities = [...pendingSecuritiesFromUsers, ...pendingSecurities];
+    // Merge and de-duplicate by _id to support mixed legacy collections
+    const uniqById = (arr) => {
+      const seen = new Set();
+      return arr.filter((item) => {
+        const id = String(item?._id);
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+    };
+    const workers = uniqById([...pendingWorkersFromUsers, ...pendingWorkers]);
+    const securities = uniqById([...pendingSecuritiesFromUsers, ...pendingSecurities]);
 
     res.json({ users: pendingUsers, workers, securities });
   } catch (err) {

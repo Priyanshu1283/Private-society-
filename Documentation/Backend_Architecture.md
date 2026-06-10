@@ -1,3 +1,170 @@
+# SocietySync Backend Architecture
+
+## Overview
+
+SocietySync backend is a Node.js + Express API for a private society platform with role-based access:
+
+- `user` (resident)
+- `worker` (service executor)
+- `security` (future/extendable role)
+- `admin` (approval + governance)
+
+All application users are persisted in MongoDB (`user` collection), with login protected by JWT.
+
+## Runtime Stack
+
+- **Runtime:** Node.js
+- **API framework:** Express
+- **Database:** MongoDB + Mongoose
+- **Auth:** JWT (`Authorization: Bearer <token>`)
+- **Password hashing:** bcrypt
+- **Upload handling:** Multer (profile pictures)
+- **Cross-origin:** CORS with explicit allowlist
+
+## High-Level Flow
+
+1. Resident/worker/security registers.
+2. Account is created with `status: pending`.
+3. Admin reviews pending requests from dashboard.
+4. Admin approves/rejects account.
+5. Only `approved` users can login and access protected endpoints.
+
+## Folder Structure (Current)
+
+```txt
+Server/
+  app.js
+  configs/
+    mongodb-connection.js
+    multer.js
+  middlewares/
+    auth.js
+    adminOnly.js
+  models/
+    userModel.js
+    workerModel.js
+    securityModel.js
+    complaintModel.js
+    eventModel.js
+    serviceModel.js
+    ...
+  routes/
+    auth-routes.js
+    admin-routes.js
+    me-routes.js
+    complaint-routes.js
+    event-routes.js
+    service-routes.js
+```
+
+## Data Model (Auth Core)
+
+### `userModel`
+
+```js
+{
+  name: String,
+  email: String, // unique, lowercase
+  houseNo: String,
+  password: String, // bcrypt hash
+  role: "user" | "worker" | "security" | "admin",
+  status: "pending" | "approved" | "rejected",
+  profilePicture: {
+    data: Buffer,
+    contentType: String
+  }
+}
+```
+
+## Authentication & Authorization
+
+### Registration
+
+- Endpoint: `POST /api/auth/register`
+- Validates `name`, `email`, `password`, `houseNo`.
+- Hashes password.
+- Role is restricted to `user|worker|security` from registration (admin cannot self-register).
+- Status is always set to `pending`.
+
+### Login
+
+- Endpoint: `POST /api/auth/login`
+- User must exist and password must match.
+- User must be `approved`.
+- JWT payload includes `id` and `role`.
+
+### Admin Login
+
+- Endpoint: `POST /api/auth/login/admin`
+- Account must be `role === admin` and `status === approved`.
+
+### Worker Login
+
+- Endpoint: `POST /api/auth/login/worker`
+- Requires worker identity and `approved` status.
+
+### Middleware
+
+- `auth.js` verifies JWT and resolves identity.
+- `adminOnly.js` allows only `req.user.role === "admin"`.
+
+## Admin Approval Workflow
+
+- `GET /api/admin/pending` -> returns grouped pending requests (`users`, `workers`, `securities`).
+- `PATCH /api/admin/approve/:role/:id` -> marks account as approved.
+- `PATCH /api/admin/reject/:role/:id` -> marks account as rejected.
+
+Legacy worker/security collections are still supported in admin endpoints for compatibility.
+
+## Domain APIs
+
+### Events (`/api/events`)
+
+- `GET /` authenticated users can view.
+- `POST /create`, `PUT /:id`, `DELETE /:id` admin only.
+
+### Complaints (`/api/complaints`)
+
+- Residents create and view their own complaints.
+- Admin can view all complaints.
+- Update/delete restricted to complaint owner or admin.
+
+### Services (`/api/services`)
+
+- Residents create service requests.
+- Admin sees all requests.
+- Non-admin users see own requests; workers see assigned requests.
+- `PATCH /:id` (close task) restricted to admin or assigned worker.
+
+### Profile (`/api/me`)
+
+- Read/update profile details.
+- Upload and fetch profile picture.
+
+## Environment Variables
+
+Required:
+
+```env
+PORT=3000
+JWT_SECRET=<secure_random_secret>
+MONGODB_URI=<mongodb_connection_uri>
+```
+
+## CORS Policy
+
+Configured allowlist includes local and deployed frontend origins. For local development:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3000`
+
+## Interview Talking Points
+
+- Role + status based onboarding (`pending -> approved`).
+- JWT-based stateless auth.
+- Granular authorization in domain routes (owner/admin/worker).
+- Backward compatibility handling for legacy worker/security collections.
+- Environment-driven API and CORS setup for local vs production parity.
 # SocietySync Backend Architecture Documentation
 
 ## Table of Contents
@@ -218,26 +385,8 @@ GET    /api/maintenance/list      # List all requests
    - Input validation
    - XSS protection
 
-## Deployment
 
-### Production Environment
-- **Server**: Node.js on VPS
-- **Database**: MongoDB Atlas
-- **Storage**: AWS S3
-- **CDN**: Cloudflare
 
-### Deployment Process
-1. Code pushed to repository
-2. CI/CD pipeline triggered
-3. Tests run automatically
-4. Build created
-5. Deployed to production
-
-### Monitoring
-- Error tracking
-- Performance monitoring
-- User analytics
-- Server health checks
 
 ## Conclusion
 

@@ -28,10 +28,14 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "worker", "security"],
+    enum: ["user", "worker", "security", "admin"],
     default: "user",
   },
-  status: { type: String, default: 'pending' } // Add status field used for admin approval
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+  }
 });
 
 // Create a model from the schema

@@ -19,8 +19,8 @@ router.post("/register", async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Determine initial status: all registrations require admin approval
-        const desiredRole = role && typeof role === 'string' ? role : 'user';
+        const allowedRoles = ["user", "worker", "security"];
+        const desiredRole = allowedRoles.includes(role) ? role : "user";
         const initialStatus = 'pending';
 
         const newUser = new userModel({
@@ -82,7 +82,9 @@ router.post("/login", async (req, res) => {
                 id: user._id,
                 name: user.name,
                 houseNo: user.houseNo,
-                email: user.email
+                email: user.email,
+                role: user.role,
+                status: user.status
             }
         });
     } catch (error) {
@@ -102,6 +104,9 @@ router.post("/login/admin", async (req, res) => {
         const admin = await userModel.findOne({ email });
         if (!admin || admin.role !== "admin") {
             return res.status(400).json({ message: 'Admin not found' });
+        }
+        if (admin.status !== "approved") {
+            return res.status(403).json({ message: `Account status: ${admin.status}` });
         }
 
         const isMatch = await bcrypt.compare(password, admin.password);
@@ -135,14 +140,21 @@ router.post("/login/worker", async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const worker = await userModel.findOne({ email });
+        let worker = await userModel.findOne({ email, role: "worker" });
+        if (!worker) {
+            worker = await workerModel.findOne({ email });
+        }
         if (!worker) return res.status(400).json({ message: 'Worker not found' });
 
         const isMatch = await bcrypt.compare(password, worker.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
+        if (worker.status !== "approved") {
+            return res.status(403).json({ message: `Account status: ${worker.status}. Awaiting admin approval.` });
+        }
+
         const token = jwt.sign(
-            { id: worker._id },
+            { id: worker._id, role: worker.role || "worker" },
             process.env.JWT_SECRET,
             { expiresIn: '30d' }
         );

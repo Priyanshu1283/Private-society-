@@ -2,6 +2,7 @@
   import React, { useState, useEffect } from 'react';
 
   const Services = () => {
+    const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
     const isAdmin = localStorage.getItem('admin') && localStorage.getItem('token');
     const [services, setServices] = useState([]);
     const [selectedServiceId, setSelectedServiceId] = useState(null);
@@ -16,7 +17,7 @@
       const fetchServices = async () => {
         const token = localStorage.getItem('token');
         try {
-          const response = await axios.get(`https://societysync-890y.onrender.com/api/services`, {
+          const response = await axios.get(`${API_BASE}/api/services`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page: 1, limit: 10 },
           });
@@ -61,12 +62,12 @@
 
       try {
         if (modalMode === 'create') {
-          await axios.post(`https://societysync-890y.onrender.com/api/services/create`, formData, {
+          await axios.post(`${API_BASE}/api/services/create`, formData, {
             headers: { Authorization: `Bearer ${token}` },
           });
         } else if (modalMode === 'edit') {
           await axios.put(
-            `https://societysync-890y.onrender.com/api/services/${selectedServiceId}`,
+            `${API_BASE}/api/services/${selectedServiceId}`,
             formData,
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +84,7 @@
     const handleDelete = async () => {
       const token = localStorage.getItem('token');
       try {
-        await axios.delete(`https://societysync-890y.onrender.com/api/services/${selectedServiceId}`, {
+        await axios.delete(`${API_BASE}/api/services/${selectedServiceId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         closeModal();

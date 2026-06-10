@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const WorkerDashBoard = () => {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
   const [workerData, setWorkerData] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState('All');
@@ -20,7 +21,7 @@ const WorkerDashBoard = () => {
           const parsedUser = JSON.parse(userData);
           setWorkerData(parsedUser);
 
-          const response = await axios.get('https://societysync-890y.onrender.com//api/services', {
+          const response = await axios.get(`${API_BASE}/api/services`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page: 1, limit: 10 },
           });
@@ -50,14 +51,14 @@ const WorkerDashBoard = () => {
   const handleCompletion = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.patch(`https://societysync-890y.onrender.com//${id}`,
-        console.log(response),
-        {}, {
+      await axios.patch(`${API_BASE}/api/services/${id}`, {}, {
         headers: { 
           Authorization: `Bearer ${token}`,
          "Content-Type": "application/json", },
       });
-      
+      setTasks((prev) => prev.map((task) => (
+        task._id === id ? { ...task, status: "closed" } : task
+      )));
     } catch (error) {
       console.error('Error updating service:', error);
     }

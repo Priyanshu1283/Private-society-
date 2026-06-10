@@ -34,6 +34,8 @@ router.get("/", authMiddleware, async (req, res) => {
 
         if (admin && admin.role !== "admin") {
             filter = { residentId: req.user._id };
+        } else if (!admin) {
+            filter = { workerId: req.user._id };
         }
 
         const services = await serviceModel.find(filter);
@@ -45,8 +47,16 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.patch("/:id", authMiddleware, async (req, res) => {
     try {
-        const updated = await serviceModel.findByIdAndUpdate(
-            req.params.id,
+        const requester = await userModel.findById(req.user._id);
+        const isAdmin = requester?.role === "admin";
+        const isWorker = requester?.role === "worker" || !requester;
+        if (!isAdmin && !isWorker) {
+            return res.status(403).json({ message: "Only admin/worker can close service" });
+        }
+
+        const query = isAdmin ? { _id: req.params.id } : { _id: req.params.id, workerId: req.user._id };
+        const updated = await serviceModel.findOneAndUpdate(
+            query,
             { status: "closed" },
             { new: true }
         );

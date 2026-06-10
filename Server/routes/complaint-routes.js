@@ -51,6 +51,15 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.put("/:id", authMiddleware, async (req, res) => {
     try {
+        const existing = await complaintModel.findById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Complaint not found" });
+
+        const admin = await userModel.findById(req.user._id);
+        const isAdmin = admin?.role === "admin";
+        if (!isAdmin && String(existing.residentId) !== String(req.user._id)) {
+            return res.status(403).json({ message: "Not allowed to edit this complaint" });
+        }
+
         const updatedComplaint = await complaintModel.findByIdAndUpdate(
             req.params.id,
             req.body,
@@ -70,11 +79,16 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
 router.delete("/:id", authMiddleware, async (req, res) => {
     try {
-        const deleted = await complaintModel.findByIdAndDelete(req.params.id);
-        if (!deleted) {
-            return res.status(404).json({ message: "Complaint not found" });
+        const existing = await complaintModel.findById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Complaint not found" });
+
+        const admin = await userModel.findById(req.user._id);
+        const isAdmin = admin?.role === "admin";
+        if (!isAdmin && String(existing.residentId) !== String(req.user._id)) {
+            return res.status(403).json({ message: "Not allowed to delete this complaint" });
         }
 
+        const deleted = await complaintModel.findByIdAndDelete(req.params.id);
         res.json({ message: "Complaint deleted successfully" });
     } catch (error) {
         console.error(error);

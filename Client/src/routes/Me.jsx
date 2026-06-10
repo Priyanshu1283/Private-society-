@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Pencil } from "lucide-react";
 
 export default function Me() {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
   const [editingPic, setEditingPic] = useState(false);
   const [editingDetails, setEditingDetails] = useState(false);
   const [form, setForm] = useState({
@@ -40,7 +41,7 @@ export default function Me() {
       
         const token = localStorage.getItem("token");
       
-        const response = await fetch("https://societysync-890y.onrender.com/api/me/profile-picture", {
+        const response = await fetch(`${API_BASE}/api/me/profile-picture`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -115,7 +116,7 @@ export default function Me() {
       }
 
       const token = localStorage.getItem("token");
-      const res = await fetch("https://societysync-890y.onrender.com/api/me", {
+      const res = await fetch(`${API_BASE}/api/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +189,7 @@ export default function Me() {
         try {
           const token = localStorage.getItem("token");
           const response = await fetch(
-            `https://societysync-890y.onrender.com/api/me/profile-picture/${userId}`,
+            `${API_BASE}/api/me/profile-picture/${userId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

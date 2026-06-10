@@ -1,12 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Siren } from 'lucide-react';
+import { Siren, Users, Briefcase, Shield, Check, X, RefreshCw, AlertCircle, Clock, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
 const DashboardContent = () => {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
   const [dashboardData, setDashboardData] = useState(null);
   const navigate = useNavigate();
   const [role, setRole] = useState("user");
+  const [pending, setPending] = useState({ users: [], workers: [], securities: [] });
+  const [activeTab, setActiveTab] = useState('user');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/pending`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPending(res.data || { users: [], workers: [], securities: [] });
+    } catch (err) {
+      console.error('Refresh failed', err);
+      alert('Failed to refresh pending registrations');
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 600);
+    }
+  };
+
+  const getTabList = () => {
+    if (activeTab === 'user') return pending.users || [];
+    if (activeTab === 'worker') return pending.workers || [];
+    if (activeTab === 'security') return pending.securities || [];
+    return [];
+  };
+
+  const activeList = getTabList();
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -28,7 +57,6 @@ const DashboardContent = () => {
     // If admin, fetch pending registrations
     if (adminData) {
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       axios.get(`${API_BASE}/api/admin/pending`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
@@ -37,12 +65,9 @@ const DashboardContent = () => {
     }
   }, []);
 
-  const [pending, setPending] = useState({ users: [], workers: [], securities: [] });
-
   const handleApprove = async (role, id) => {
     try {
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       const res = await axios.patch(`${API_BASE}/api/admin/approve/${role}/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -61,7 +86,6 @@ const DashboardContent = () => {
   const handleReject = async (role, id) => {
     try {
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       await axios.patch(`${API_BASE}/api/admin/reject/${role}/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -181,7 +205,7 @@ const DashboardContent = () => {
   return (
     <>
     { dashboardData ? 
-    <div className="w-full md:w-4/5 p-6 md:p-8 relative animate-gradientFade bg-neutral-950">
+    <div className="w-full p-6 md:p-8 relative animate-gradientFade bg-neutral-950">
     <style>
       {`
         @keyframes slideIn {
@@ -221,94 +245,219 @@ const DashboardContent = () => {
               const formatted = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
               return formatted.length > 12 ? formatted.slice(0, 9) + '...' : formatted;
             })()
-          }, ${dashboardData.houseNo}`}
+          }${dashboardData.houseNo ? `, House: ${dashboardData.houseNo}` : ''}`}
           </h2>
           <div 
             onClick={() => navigate("/emergency")}
-            className='bg-red-500 hover:bg-red-700 rounded-[50%] p-3 text-white'>
+            className='bg-red-500 hover:bg-red-700 rounded-[50%] p-3 text-white transition-all duration-200 hover:scale-105 shadow-md shadow-red-500/30 cursor-pointer'>
               <Siren />
           </div>
         </div>
-        { role === "admin" && <span className='text-red-800 text-2xl font-semibold'>[ Admin ]</span>}
-        <p className="text-lg bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent animate-slideIn">
+        { role === "admin" && (
+          <div className="mt-1">
+            <span className='bg-red-100 border border-red-200 text-red-700 text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider'>
+              [ Admin Portal ]
+            </span>
+          </div>
+        )}
+        <p className="text-sm text-gray-500 mt-2 font-medium">
           Today is {`${formattedDate}`}
         </p>
       </div>
-      
     </div>
 
     {role === 'admin' && (
-      <div className="mb-8 p-4 bg-white/5 rounded-lg">
-        <h3 className="text-xl font-semibold mb-4">Pending Registrations</h3>
-        <div className="flex items-center justify-between mb-3">
-          <div />
-          <div className="flex gap-2">
-            <button onClick={async () => {
-              const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com/';
-              const token = localStorage.getItem('token');
-              try {
-                const res = await axios.get(`${API_BASE}/api/admin/pending`, { headers: { Authorization: `Bearer ${token}` } });
-                setPending(res.data || { users: [], workers: [], securities: [] });
-              } catch (err) {
-                console.error('Refresh failed', err);
-                alert('Failed to refresh');
-              }
-            }} className="bg-blue-600 px-3 py-1 rounded">Refresh</button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <h4 className="font-bold">Users</h4>
-            {pending.users.length === 0 ? <p className="text-sm text-gray-400">No pending users</p> : null}
-            {pending.users.map(u => (
-              <div key={u._id} className="flex items-center justify-between p-2 bg-neutral-800/50 rounded mt-2">
-                <div>
-                  <div className="font-medium">{u.name} ({u.houseNo})</div>
-                  <div className="text-sm text-gray-400">{u.email}</div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleApprove('user', u._id)} className="bg-green-600 px-3 py-1 rounded">Approve</button>
-                  <button onClick={() => handleReject('user', u._id)} className="bg-red-600 px-3 py-1 rounded">Reject</button>
-                </div>
+      <>
+        {/* Admin Quick Metrics Panel */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 animate-slideIn">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Approvals</p>
+                <h3 className="text-3xl font-extrabold text-cyan-600 mt-1">
+                  {(pending.users?.length || 0) + (pending.workers?.length || 0) + (pending.securities?.length || 0)}
+                </h3>
               </div>
-            ))}
+              <div className="p-3 bg-cyan-50 text-cyan-600 rounded-xl">
+                <Clock size={20} />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-3">Accounts waiting for verification</p>
           </div>
 
-          <div>
-            <h4 className="font-bold">Workers</h4>
-            {pending.workers.length === 0 ? <p className="text-sm text-gray-400">No pending workers</p> : null}
-            {pending.workers.map(w => (
-              <div key={w._id} className="flex items-center justify-between p-2 bg-neutral-800/50 rounded mt-2">
-                <div>
-                  <div className="font-medium">{w.name}</div>
-                  <div className="text-sm text-gray-400">{w.email}</div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleApprove('worker', w._id)} className="bg-green-600 px-3 py-1 rounded">Approve</button>
-                  <button onClick={() => handleReject('worker', w._id)} className="bg-red-600 px-3 py-1 rounded">Reject</button>
-                </div>
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Modules</p>
+                <h3 className="text-3xl font-extrabold text-purple-600 mt-1">7</h3>
               </div>
-            ))}
+              <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                <Briefcase size={20} />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-3">System features operational</p>
           </div>
 
-          <div>
-            <h4 className="font-bold">Security</h4>
-            {pending.securities.length === 0 ? <p className="text-sm text-gray-400">No pending security</p> : null}
-            {pending.securities.map(s => (
-              <div key={s._id} className="flex items-center justify-between p-2 bg-neutral-800/50 rounded mt-2">
-                <div>
-                  <div className="font-medium">{s.name}</div>
-                  <div className="text-sm text-gray-400">{s.email}</div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleApprove('security', s._id)} className="bg-green-600 px-3 py-1 rounded">Approve</button>
-                  <button onClick={() => handleReject('security', s._id)} className="bg-red-600 px-3 py-1 rounded">Reject</button>
-                </div>
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">System Security</p>
+                <h3 className="text-3xl font-extrabold text-emerald-600 mt-1">Active</h3>
               </div>
-            ))}
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <Shield size={20} />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-3">Role-based access is enforced</p>
           </div>
         </div>
-      </div>
+
+        {/* Pending Approval Requests Container */}
+        <div className="mb-10 bg-white/70 backdrop-blur-md border border-gray-200/85 rounded-3xl p-6 md:p-8 shadow-md animate-slideIn">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="border-l-4 border-cyan-500 pl-3">
+              <h3 className="text-xl font-bold text-gray-800">Registration Approvals</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Approve or reject new registration requests</p>
+            </div>
+            <button 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-cyan-500/20 active:scale-95 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh List'}</span>
+            </button>
+          </div>
+
+          {/* Tab Buttons */}
+          <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 rounded-2xl mb-6 max-w-lg">
+            <button
+              onClick={() => setActiveTab('user')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                activeTab === 'user'
+                  ? 'bg-white text-cyan-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800 hover:bg-white/40'
+              }`}
+            >
+              <Users size={14} />
+              <span>Residents</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                pending.users?.length > 0 
+                  ? 'bg-cyan-500 text-white animate-pulse' 
+                  : 'bg-gray-300 text-gray-600'
+              }`}>
+                {pending.users?.length || 0}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('worker')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                activeTab === 'worker'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800 hover:bg-white/40'
+              }`}
+            >
+              <Briefcase size={14} />
+              <span>Workers</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                pending.workers?.length > 0 
+                  ? 'bg-purple-500 text-white animate-pulse' 
+                  : 'bg-gray-300 text-gray-600'
+              }`}>
+                {pending.workers?.length || 0}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('security')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                activeTab === 'security'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800 hover:bg-white/40'
+              }`}
+            >
+              <Shield size={14} />
+              <span>Security</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                pending.securities?.length > 0 
+                  ? 'bg-indigo-500 text-white animate-pulse' 
+                  : 'bg-gray-300 text-gray-600'
+              }`}>
+                {pending.securities?.length || 0}
+              </span>
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          {activeList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-gray-50 border border-dashed border-gray-200 rounded-3xl text-center">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-3">
+                <CheckCircle size={28} />
+              </div>
+              <h4 className="text-lg font-bold text-gray-800 mb-0.5">All Caught Up!</h4>
+              <p className="text-gray-400 max-w-sm text-xs">
+                No pending approval requests in this category. All registrations are processed.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeList.map(item => (
+                <div 
+                  key={item._id} 
+                  className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:scale-[1.01] hover:border-cyan-500/20 transition-all duration-200 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
+                        {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                      </div>
+                      <div className="ml-3 overflow-hidden">
+                        <h4 className="font-bold text-gray-800 text-sm truncate" title={item.name}>{item.name}</h4>
+                        <p className="text-[10px] text-gray-400 truncate" title={item.email}>{item.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200/50">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-400">Role:</span>
+                        <span className="font-semibold text-gray-700 capitalize bg-white px-2 py-0.5 rounded-full border border-gray-200 text-[10px]">
+                          {item.role || activeTab}
+                        </span>
+                      </div>
+                      {item.houseNo && (
+                        <div className="flex justify-between items-center text-xs mt-2 pt-2 border-t border-gray-200/30">
+                          <span className="text-gray-400">House No:</span>
+                          <span className="font-bold text-cyan-600 bg-cyan-50 px-2.5 py-0.5 rounded-full">
+                            {item.houseNo}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2.5 border-t border-gray-100 pt-3.5">
+                    <button 
+                      onClick={() => handleReject(activeTab, item._id)}
+                      className="flex-1 flex items-center justify-center gap-1 py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer border border-rose-100"
+                    >
+                      <X size={12} />
+                      <span>Reject</span>
+                    </button>
+                    <button 
+                      onClick={() => handleApprove(activeTab, item._id)}
+                      className="flex-1 flex items-center justify-center gap-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer shadow-sm shadow-emerald-500/10"
+                    >
+                      <Check size={12} />
+                      <span>Approve</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </>
     )}
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {cards.map((card, index) => (

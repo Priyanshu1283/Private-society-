@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
   const [form, setForm] = useState({ email: '', password: '' });
   const [user, setUser] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -16,7 +17,6 @@ const AdminLogin = () => {
     e.preventDefault();
     setErrorMessage(null);
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com';
       const res = await axios.post(`${API_BASE}/api/auth/login/admin`, form, {
         withCredentials: true,
       });
@@ -39,7 +39,6 @@ const AdminLogin = () => {
       }
 
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE || 'https://societysync-890y.onrender.com/';
         const res = await axios.get(`${API_BASE}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,

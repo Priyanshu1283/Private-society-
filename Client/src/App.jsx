@@ -53,13 +53,13 @@ const App = () => {
 
   return (
     <Routes>
-      {/* ================= AUTH ROUTES ================= */}
+      {/*  AUTH ROUTES */}
       <Route path="/login" element={<UserLogin />} />
       <Route path="/login/admin" element={<AdminLogin />} />
       <Route path="/login/worker" element={<WorkerLogin />} />
       <Route path="/discover" element={<Discover />} />
 
-      {/* ================= PROTECTED ROUTES ================= */}
+      {/*  PROTECTED ROUTES */}
       <Route element={<Layout user={user} />}>
         {/* dashboards */}
         <Route path="/dashboard" element={<DashboardContent />} />
@@ -77,7 +77,7 @@ const App = () => {
         <Route path="/me" element={<Me />} />
       </Route>
 
-      {/* ================= FALLBACK ================= */}
+      {/* FALLBACK  */}
       <Route
         path="*"
         element={<Navigate to={user ? "/dashboard" : "/login"} replace />}

@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 const Events = () => {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
   const isAdmin = localStorage.getItem('admin') && localStorage.getItem('token');
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -18,7 +19,7 @@ const Events = () => {
     const fetchEvents = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`https://societysync-890y.onrender.com/api/events`, {
+        const response = await axios.get(`${API_BASE}/api/events`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { page: 1, limit: 10 },
         });
@@ -62,11 +63,11 @@ const Events = () => {
     const token = localStorage.getItem('token');
     try {
       if (modalMode === 'create') {
-        await axios.post(`https://societysync-890y.onrender.com/api/events/create`, formData, {
+        await axios.post(`${API_BASE}/api/events/create`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (modalMode === 'edit') {
-        await axios.put(`https://societysync-890y.onrender.com/api/events/${selectedEvent._id}`, formData, {
+        await axios.put(`${API_BASE}/api/events/${selectedEvent._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -80,7 +81,7 @@ const Events = () => {
   const handleDelete = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`https://societysync-890y.onrender.com/api/events/${selectedEvent._id}`, {
+      await axios.delete(`${API_BASE}/api/events/${selectedEvent._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       closeModal();

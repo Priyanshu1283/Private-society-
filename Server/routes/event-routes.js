@@ -12,10 +12,10 @@ router.post("/create", authMiddleware, async (req, res) => {
 
     try {
         const admin = await userModel.findById(req.user._id);
-        if (admin.role !== "admin") return res.json({ message: "You are not an admin" });
+        if (admin.role !== "admin") return res.status(403).json({ message: "You are not an admin" });
 
         const existing = await eventModel.findOne({ title });
-        if (existing) return res.json({ message: "Event already exists" });
+        if (existing) return res.status(409).json({ message: "Event already exists" });
 
         const event = new eventModel({
             title,
@@ -54,7 +54,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     try {
         const admin = await userModel.findById(req.user._id);
-        if (admin.role !== "admin") return res.json({ message: "You are not an admin" });
+        if (admin.role !== "admin") return res.status(403).json({ message: "You are not an admin" });
 
         const updatedEvent = await eventModel.findByIdAndUpdate(
             req.params.id,
@@ -76,7 +76,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     try {
         const admin = await userModel.findById(req.user._id);
-        if (admin.role !== "admin") return res.json({ message: "You are not an admin" });
+        if (admin.role !== "admin") return res.status(403).json({ message: "You are not an admin" });
 
         const deleted = await eventModel.findByIdAndDelete(req.params.id);
         if (!deleted) return res.status(404).json({ message: "Event not found" });

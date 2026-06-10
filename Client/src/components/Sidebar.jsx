@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
+  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
   const [user, setUser] = useState(null);
   const [profilePicture, setProfilePicture] = useState(null);
   const [isWorker, setisWorker] = useState(false);
@@ -30,7 +31,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           const userObj = storedUser ? JSON.parse(storedUser) : adminData ? JSON.parse(adminData): JSON.parse(workerData);
           setUser(userObj);
           if (userObj.id) {
-            const response = await fetch(`https://societysync-890y.onrender.com/api/me/profile-picture/${userObj.id}`, {
+            const response = await fetch(`${API_BASE}/api/me/profile-picture/${userObj.id}`, {
               method: 'GET',
               headers: {
                 Authorization: `Bearer ${token}`,
